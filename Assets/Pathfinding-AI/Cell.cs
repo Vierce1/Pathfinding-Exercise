@@ -4,15 +4,15 @@ using UnityEngine;
 
 public class Cell : MonoBehaviour
 {
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
+    // Grid passes pathDirection which denotes which cell a unit on this cell should move to
+    // e.g., (0, 1) means move to the cell directly above (positive Z value)
+    public Vector2Int pathDirection;
 
-    // Update is called once per frame
-    void Update()
+
+    void OnTriggerEnter(Collider other)
     {
-        
+        // On trigger enter, gameobject is passed the cell to move to
+        var mob = other.gameObject.GetComponent<Mob>();
+        mob.UpdateMoveDirection(pathDirection);
     }
 }
