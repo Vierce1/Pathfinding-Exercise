@@ -1,0 +1,13 @@
+/Library/
+Library/
+*.mp3
+*.mp4
+*.MP4
+*.wmv
+*.wav
+*.xcf
+/Temp
+/Unused*
+*.csproj
+*.sln
+*.tmp
