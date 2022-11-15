@@ -6,11 +6,14 @@ public class GameHandler : MonoBehaviour
 {
     [SerializeField] GameObject mob;
     [SerializeField] Transform mobHolder;
+    Grid grid; 
 
     void Start()
     {
+        grid = FindObjectOfType<Grid>();
+
         //spawn mobs
-        for(int i = 0; i < 100; i++)
+        for (int i = 0; i < 1000; i++)
         {
             var pos = new Vector3(Random.Range(1, 50), 3, Random.Range(1, 50));
             GameObject mobGO = Instantiate(mob, pos, Quaternion.identity);

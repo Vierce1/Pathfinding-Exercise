@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 6795835554346052746}
   - component: {fileID: 6795835554346052747}
   - component: {fileID: 6795835554346052744}
-  - component: {fileID: -7495758894403832621}
+  - component: {fileID: 6104890098606731444}
   m_Layer: 0
   m_Name: Cell
   m_TagString: Untagged
@@ -96,7 +96,7 @@ BoxCollider:
   serializedVersion: 2
   m_Size: {x: 0.05, y: 2, z: 0.05}
   m_Center: {x: 0, y: 0, z: 0}
---- !u!114 &-7495758894403832621
+--- !u!114 &6104890098606731444
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -105,7 +105,8 @@ MonoBehaviour:
   m_GameObject: {fileID: 6795835554346052750}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 72b0a3d82fd47a5429b8c618eca43a98, type: 3}
+  m_Script: {fileID: 11500000, guid: 6340dbfabf57b6040b393c6e90bd2cad, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  pathDirection: {x: 0, y: 0}
+  nonWalkableMaterial: {fileID: 2100000, guid: 1c0ea941188e3d94eb5aeb032f48e0be, type: 2}
+  walkableMaterial: {fileID: 2100000, guid: f583641120ae20c428683427ba5d213f, type: 2}

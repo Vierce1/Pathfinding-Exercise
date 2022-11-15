@@ -11,3 +11,5 @@ Library/
 *.csproj
 *.sln
 *.tmp
+Assets/Environ/
+*.meta
