@@ -14,15 +14,28 @@ public class CellViz : MonoBehaviour
     public List<Vector2> moveToCells;
     public bool inRadius;
 
+    void Start()
+    {
+
+    }
     void OnTriggerEnter(Collider other)
     {
         if(other.gameObject.tag != "Mob")
         {
             return;
         }
+        var direction = cell.pathDirection;
         // On trigger enter, gameobject is passed the cell to move to
         var mob = other.gameObject.GetComponent<Mob>();
-        mob.UpdateMoveDirection(cell.pathDirection);
+        mob.onUnwalkableSurface = false;
+
+        //check if they are on an unwalkable surface. If so, just get them out
+        if (!cell.isWalkable)
+        {
+            direction = cell.GetWalkablePathDirection();
+            mob.onUnwalkableSurface = true;
+        }
+        mob.UpdateMoveDirection(direction);
     }
     public void SetColor(bool isWalkable)
     {

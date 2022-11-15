@@ -5,10 +5,11 @@ using UnityEngine;
 public class Mob : MonoBehaviour
 {
     public Grid grid;
-    Vector2 moveDirection;
+    [SerializeField] Vector2 moveDirection;
     public Vector2Int goalLocation;
-    float moveSpeed = 0.07f;
-    float randomnessMove = 0.25f;
+    float moveSpeed = 0.15f;
+    float randomnessMove = 0.5f;
+    public bool onUnwalkableSurface = false;
 
     // Called when Mob comes into contact with centerpoint of new cell    
     public void UpdateMoveDirection(Vector2Int newDir)
@@ -20,13 +21,19 @@ public class Mob : MonoBehaviour
     public void AddRandomnessToMovement()
     {
         var randomDirection = new Vector2(
-                    Random.Range(-randomnessMove, randomnessMove)
-                    , Random.Range(-randomnessMove, randomnessMove));
-        
+                Random.Range(-randomnessMove, randomnessMove)
+                , Random.Range(-randomnessMove, randomnessMove));
+
+        //If they're out of bounds just get them out of there, no randomness
+        if (onUnwalkableSurface)
+        {
+            randomDirection = moveDirection;
+        }
         //check if at edge of map - if so, move inward
         if (grid != null &&
             grid.GetCell((int)transform.position.x, (int)transform.position.z) == null)
         {
+            transform.position = Vector3.zero;
             randomDirection = 
                 (grid.targetList[0].transform.position - transform.position).normalized;
         }        

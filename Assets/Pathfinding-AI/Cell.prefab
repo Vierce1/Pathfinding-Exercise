@@ -49,7 +49,7 @@ MeshRenderer:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6795835554346052750}
-  m_Enabled: 1
+  m_Enabled: 0
   m_CastShadows: 1
   m_ReceiveShadows: 1
   m_DynamicOccludee: 1
@@ -111,3 +111,7 @@ MonoBehaviour:
   pathDirection: {x: 0, y: 0}
   nonWalkableMaterial: {fileID: 2100000, guid: 1c0ea941188e3d94eb5aeb032f48e0be, type: 2}
   walkableMaterial: {fileID: 2100000, guid: f583641120ae20c428683427ba5d213f, type: 2}
+  closestTargetPosition: {x: 0, y: 0}
+  targets: []
+  moveToCells: []
+  inRadius: 0

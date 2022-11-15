@@ -32,11 +32,12 @@ public class Cell : Node<Vector2Int>, IComparable<Cell>
         if (targets == null || targets.Count == 0)
         {
             //If target leaves area, set to null/zero so mobs only move randomly
+            // And don't continue the chain to save processing power
             closestTargetCell = null;
             pathDirection = Vector2Int.zero;
             return;
         }
-
+        
             //clear out closest target
             closestTargetCell = null;
         
@@ -133,5 +134,30 @@ public class Cell : Node<Vector2Int>, IComparable<Cell>
             return 9999;
         }
         return Mathf.Abs(Value.x - other.Value.x) + Mathf.Abs(Value.y - other.Value.y);
+    }
+    
+    //for use when a unit ends up on a non-walkable cell. Get them off quickly
+    public Vector2Int GetWalkablePathDirection()
+    {
+        return (GetNearestWalkableCell().Value - Value);
+    }
+     Cell GetNearestWalkableCell()
+    {
+        var cells = new List<Cell>();
+        //iterate through nearby cells
+        for (int i = Value.x - 8; i < Value.x + 8; i++)
+        {
+            for (int j = Value.y - 8; j < Value.y + 8; j++)
+            {
+                var cell = grid.GetCell(i, j);
+                if (cell == null || !cell.isWalkable)
+                {
+                    continue;
+                }
+                cells.Add(cell);
+            }
+        }
+        cells = cells.OrderBy(cell => cell.CompareTo(this)).ToList();
+        return cells.First();
     }
 }

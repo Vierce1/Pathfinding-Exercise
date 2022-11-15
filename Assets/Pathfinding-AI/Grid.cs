@@ -39,7 +39,6 @@ public class Grid : MonoBehaviour
                 cellInitialList[i].Add(cellScript);
 
                 cellList.Add(cellScript);
-
                 //TESTING
                 //if (Random.Range(0, 3) == 2)
                 //{
@@ -85,7 +84,7 @@ public class Grid : MonoBehaviour
     void PlotPaths()
     {
         // sort the list of cells to get the closest cells for each target
-        // only get the central cell of the targets for now
+        // only get the central cell of the targets for now        
         foreach(var target in targetList)
         {
             var targetPos = GetTargetCell(target, false);
@@ -96,12 +95,10 @@ public class Grid : MonoBehaviour
     }
     void ProcessCells()
     {
-        foreach(var cell in cellList)
+        for (int i = 0; i < cellList.Count; i++)
         {
             // Only need to set the closest target every time we reprocess
-            cell.SetClosestTarget();
-            //moved to bottom of SetClosestTarget
-            //cell.SelectMoveToTarget();
+            cellList[i].SetClosestTarget();
         }
     }
 
@@ -244,8 +241,11 @@ public class Grid : MonoBehaviour
                 Mathf.RoundToInt(target.transform.position.x), 0
                 , Mathf.RoundToInt(target.transform.position.z));
 
-            cell = GetCell(targetPos.x + Random.Range(-dist, dist + 1)
+            if (cell.isWalkable)
+            {
+                cell = GetCell(targetPos.x + Random.Range(-dist, dist + 1)
                     , targetPos.z + Random.Range(-dist, dist + 1));
+            }
         }
 
         if (cell == null)
