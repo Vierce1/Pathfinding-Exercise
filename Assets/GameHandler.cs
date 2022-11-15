@@ -6,7 +6,8 @@ public class GameHandler : MonoBehaviour
 {
     [SerializeField] GameObject mob;
     [SerializeField] Transform mobHolder;
-    Grid grid; 
+    Grid grid;
+    List<Mob> mobList = new List<Mob>();
 
     void Start()
     {
@@ -19,11 +20,16 @@ public class GameHandler : MonoBehaviour
             GameObject mobGO = Instantiate(mob, pos, Quaternion.identity);
             mobGO.transform.parent = mobHolder;
             mobGO.transform.Rotate(new Vector3(0, 0, 90));
+            mobList.Add(mobGO.GetComponent<Mob>());
         }
     }
 
     void Update()
     {
         
+    }
+    public void UpdateMobMoveTargets()
+    {
+        mobList.ForEach(mob => mob.AddRandomnessToMovement());
     }
 }

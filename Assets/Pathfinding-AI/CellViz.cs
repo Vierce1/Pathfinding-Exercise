@@ -8,9 +8,15 @@ public class CellViz : MonoBehaviour
     [SerializeField] Vector2Int pathDirection;
     [SerializeField] Material nonWalkableMaterial;
     [SerializeField] Material walkableMaterial;
+    [SerializeField] Vector2Int closestTargetPosition;
+     List<Vector2> moveToCells;
 
     void OnTriggerEnter(Collider other)
     {
+        if(other.gameObject.tag != "Mob")
+        {
+            return;
+        }
         // On trigger enter, gameobject is passed the cell to move to
         var mob = other.gameObject.GetComponent<Mob>();
         mob.UpdateMoveDirection(cell.pathDirection);
@@ -19,8 +25,14 @@ public class CellViz : MonoBehaviour
     {
         GetComponent<MeshRenderer>().material = isWalkable ? walkableMaterial : nonWalkableMaterial;
     }
+    public void AddMoveToLocations()
+    {
+        cell.moveToCells.ForEach(x => moveToCells.Add(x.Value));
+    }
     private void Update()
     {
         pathDirection = cell.pathDirection;
+        closestTargetPosition = cell.closestTargetCell != null ?
+            cell.closestTargetCell.Value : Vector2Int.zero;
     }
 }

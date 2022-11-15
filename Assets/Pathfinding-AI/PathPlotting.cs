@@ -1,8 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using Pathfinding;
-using System.Linq;
 
 public class PathPlotting
 {
@@ -19,13 +17,10 @@ public class PathPlotting
         // add this end target cell to their moveTo list
         var neighbors = cell.GetNeighborCells(false);
 
-        foreach(var neighbor in neighbors)
+        foreach (var neighbor in neighbors)
         {
-            if (neighbor.isWalkable)
-            {
-                neighbor.moveToCells.Add(cell);
-                neighbor.SelectMoveToTarget();
-            }
+            neighbor.moveToCells.Add(cell);
+            neighbor.SelectMoveToTarget();
         }
     }
     public void AddWayPoint(Vector2Int pt)

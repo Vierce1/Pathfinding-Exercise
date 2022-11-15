@@ -16,7 +16,7 @@ GameObject:
   - component: {fileID: -8110798851158965605}
   m_Layer: 0
   m_Name: Mob
-  m_TagString: Untagged
+  m_TagString: Mob
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0

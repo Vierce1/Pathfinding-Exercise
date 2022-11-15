@@ -6,20 +6,21 @@ using System.Linq;
 
 public class Grid : MonoBehaviour
 {
+    GameHandler gameHandler;
     //X is number of columns. Y is number of rows.
     [SerializeField] int xCellCount = 100;
     [SerializeField] int zCellCount = 100;
     float heightAboveSeaLevel = 3;
     [SerializeField] GameObject cell;
+    public List<Target> targetList = new List<Target>();
     public List<Cell[]> cells { get; private set; }
     public List<Cell> cellList = new List<Cell>();
-    float targetRecalcTimer = 4f;
-    float targetRecalcTriggerTime = 1f;
-
-    public Cell targetLocation;
+    float targetRecalcTimer = 1f;
+    float targetRecalcTriggerTime = 0.5f;
 
     void Start()
     {
+        gameHandler = FindObjectOfType<GameHandler>();
         cells = new List<Cell[]>();
         // Initialize the local cell holding List
         var cellInitialList = new List<List<Cell>>();
@@ -58,9 +59,12 @@ public class Grid : MonoBehaviour
             cells[i] = cellInitialList[i].ToArray();
         }
 
-        targetLocation = cellList[0];
+        // Find all initial targets. Can add more later
+        var targGOs = GameObject.FindGameObjectsWithTag("Target").ToList();
+        targGOs.ForEach(x => targetList.Add(x.GetComponent<Target>()));
+
         // Initial plot - Call it again as targets change or over time
-        StartCoroutine(PlotPaths());
+        PlotPaths();
     }
 
     void FixedUpdate()
@@ -69,24 +73,32 @@ public class Grid : MonoBehaviour
         // Update cell targets every x seconds
         if (targetRecalcTimer > targetRecalcTriggerTime)
         {
-            targetRecalcTimer = 0; 
+            targetRecalcTimer = 0;
+            PlotPaths();
             ProcessCells();
+            gameHandler.UpdateMobMoveTargets();
         }
 
     }
 
-    //Calculate path for every cell
-    IEnumerator PlotPaths()
+    //Calculate path for every cell. Called every path update
+    void PlotPaths()
     {
-        var sortedList = cellList.OrderBy(x => x.CompareTo(targetLocation)).ToList();
-        PathPlotting plot = new PathPlotting();
-        plot.CalculatePath(this, sortedList.First());
-        yield return null;
+        // sort the list of cells to get the closest cells for each target
+        foreach(var target in targetList)
+        {
+            var targetPos = GetTargetCell(target);
+            var sortedList = cellList.OrderBy(x => x.CompareTo(targetPos)).ToList();
+            PathPlotting plot = new PathPlotting();
+            plot.CalculatePath(this, sortedList.First());
+        }
     }
     void ProcessCells()
     {
         foreach(var cell in cellList)
         {
+            // Only need to set the closest target every time we reprocess
+            cell.SetClosestTarget();
             cell.SelectMoveToTarget();
         }
     }
@@ -96,6 +108,7 @@ public class Grid : MonoBehaviour
         cell.pathDirection = direction;
     }
 
+    #region get neighbors
     public List<Cell> GetNeighborCells(Vector2Int location)
     {
         List<Cell> neighbors = new List<Cell> { };
@@ -195,6 +208,7 @@ public class Grid : MonoBehaviour
         return neighbors;
         //this returns all possible neighbors, except those that are marked unwalkable
     }
+    #endregion
 
     public void ToggleWalkable(Cell cell, bool makeWalkable)
     {
@@ -213,5 +227,11 @@ public class Grid : MonoBehaviour
             return cells[x][z];
         }
         return null;
+    }
+    public Cell GetTargetCell(Target target)
+    {
+        return GetCell(
+            Mathf.RoundToInt(target.transform.position.x),
+            Mathf.RoundToInt(target.transform.position.z));
     }
 }

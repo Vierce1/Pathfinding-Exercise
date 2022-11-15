@@ -13,9 +13,10 @@ public class Cell : Node<Vector2Int>, IComparable<Cell>
     public bool isWalkable { get; set; }
     Grid grid;
     public CellViz cellViz;
-    public bool pathfindRunning = false;
 
     public List<Cell> moveToCells = new List<Cell>();
+    public List<Target> targets = new List<Target>();
+    public Cell closestTargetCell { get; private set; }
 
     public Cell(Grid gridMap, Vector2Int value, CellViz cellVisual) : base(value)
     {
@@ -24,11 +25,32 @@ public class Cell : Node<Vector2Int>, IComparable<Cell>
         cellViz = cellVisual;
     }
 
-    //public override List<Node<Vector2Int>> GetNeighbors()
-    //{
-    //    return grid.GetNeighborCells(Value);
-    //}
+    // Called by Grid on every path update
+    public void SelectMoveToTarget()
+    {
+        if (moveToCells.Count == 0)
+        {
+            return;
+        }
+        // Determine which cell in moveTo list is closest to target and select that one as the goal
+        moveToCells = moveToCells.OrderBy(x => x.CompareTo(closestTargetCell)).ToList();
+        pathDirection = moveToCells.First().Value - Value;
+        AddNeighborMoveTos();
 
+        //cellViz.moveToCells.Clear();
+        //cellViz.AddMoveToLocations();
+
+        moveToCells.Clear();
+    }
+    void AddNeighborMoveTos()
+    {
+        // Now tell all neighbor cells to move to this cell
+        var neighbors = GetNeighborCells(true);
+        foreach (var neighbor in neighbors)
+        {
+            neighbor.moveToCells.Add(this);
+        }
+    }
     public List<Cell> GetNeighborCells(bool onlyFartherCells)
     {
         var neighs = grid.GetNeighborCells(Value);
@@ -42,8 +64,9 @@ public class Cell : Node<Vector2Int>, IComparable<Cell>
         // Farther away from the target than this one
         foreach(var cell in neighs)
         {
-            if(cell.CompareTo(grid.targetLocation) >
-                CompareTo(grid.targetLocation) )
+            if(cell.CompareTo(closestTargetCell) > this.CompareTo(closestTargetCell) 
+                //&& cell.closestTargetCell == this.closestTargetCell
+                )
             {
                 moveFromCells.Add(cell);
             }
@@ -51,35 +74,27 @@ public class Cell : Node<Vector2Int>, IComparable<Cell>
         return moveFromCells;
     }
 
-    public void SelectMoveToTarget()
+
+    public void SetClosestTarget()
     {
-        if(moveToCells.Count == 0)
+        if(targets == null || targets.Count == 0)
         {
+            //If target leaves area, set to null/zero so mobs only move randomly
+            closestTargetCell = null;
+            pathDirection = Vector2Int.zero;
             return;
         }
-        // Determine which cell in moveTo list is closest to target and select that one as the goal
-        moveToCells = moveToCells.OrderBy(x => x.CompareTo(grid.targetLocation)).ToList();
-        pathDirection = moveToCells.First().Value - Value;
-        AddNeighborMoveTos();
-        moveToCells.Clear();
-    }
-    void AddNeighborMoveTos()
-    {
-        // Now tell all neighbor cells to move to this cell
-        var neighbors = GetNeighborCells(true);
-        foreach (var neighbor in neighbors)
-        {
-            //Already check for walkable in grid.GetNeighborCells
-            //if (neighbor.isWalkable)
-            //{
-                neighbor.moveToCells.Add(this);
-                //neighbor.SelectMoveToTarget();
-            //}
-        }
+        var closestTarget = targets.OrderBy(
+            targ => targ.transform.position - cellViz.transform.position).First();
+        closestTargetCell = grid.GetTargetCell(closestTarget);
     }
 
     public int CompareTo(Cell other)
     {
+        if(other == null)
+        {
+            return 9999;
+        }
         return Mathf.Abs(Value.x - other.Value.x) + Mathf.Abs(Value.y - other.Value.y);
     }
 }
