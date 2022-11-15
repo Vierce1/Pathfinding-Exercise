@@ -20,7 +20,7 @@ public class PathPlotting
         foreach (var neighbor in neighbors)
         {
             neighbor.moveToCells.Add(cell);
-            neighbor.SelectMoveToTarget();
+            neighbor.SelectMoveToTarget(cell);
         }
     }
     public void AddWayPoint(Vector2Int pt)

@@ -9,7 +9,10 @@ public class CellViz : MonoBehaviour
     [SerializeField] Material nonWalkableMaterial;
     [SerializeField] Material walkableMaterial;
     [SerializeField] Vector2Int closestTargetPosition;
-     List<Vector2> moveToCells;
+    [SerializeField] List<Target> targets;
+    //public Target closestTarget;
+    public List<Vector2> moveToCells;
+    public bool inRadius;
 
     void OnTriggerEnter(Collider other)
     {
@@ -31,8 +34,9 @@ public class CellViz : MonoBehaviour
     }
     private void Update()
     {
-        pathDirection = cell.pathDirection;
-        closestTargetPosition = cell.closestTargetCell != null ?
-            cell.closestTargetCell.Value : Vector2Int.zero;
+        //pathDirection = cell.pathDirection;
+        //closestTargetPosition = cell.closestTargetCell != null ?
+        //    cell.closestTargetCell.Value : Vector2Int.zero;
+        //targets = cell.targets;        
     }
 }

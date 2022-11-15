@@ -17,6 +17,7 @@ public class Cell : Node<Vector2Int>, IComparable<Cell>
     public List<Cell> moveToCells = new List<Cell>();
     public List<Target> targets = new List<Target>();
     public Cell closestTargetCell { get; private set; }
+    bool insideRadius = false;
 
     public Cell(Grid gridMap, Vector2Int value, CellViz cellVisual) : base(value)
     {
@@ -25,21 +26,74 @@ public class Cell : Node<Vector2Int>, IComparable<Cell>
         cellViz = cellVisual;
     }
 
-    // Called by Grid on every path update
-    public void SelectMoveToTarget()
+    // Called on every path update
+    public void SetClosestTarget()
+    {
+        if (targets == null || targets.Count == 0)
+        {
+            //If target leaves area, set to null/zero so mobs only move randomly
+            closestTargetCell = null;
+            pathDirection = Vector2Int.zero;
+            return;
+        }
+
+            //clear out closest target
+            closestTargetCell = null;
+        
+        //Get the closest target - order the list by closest one to this cell
+        targets = targets.OrderBy(
+                            targ => targ.CompareTo(this)).ToList();
+        var closestTarget = targets.First();
+
+        var cell = grid.GetTargetCell(closestTarget, false);
+        closestTargetCell = cell;
+        
+
+        // now if this cell is inside the target radius,
+        // pick another random cell inside the radius as target cell
+        if (CompareTo(cell) < closestTarget.targetRadius)
+        {
+            insideRadius = true;
+            cellViz.inRadius = true;
+            cell = grid.GetTargetCell(closestTarget, true);
+        }
+        else {
+            insideRadius = false;
+            cellViz.inRadius = false;
+        }
+        SelectMoveToTarget(cell);
+    }
+
+    public void SelectMoveToTarget(Cell cellGoal)
     {
         if (moveToCells.Count == 0)
         {
             return;
         }
         // Determine which cell in moveTo list is closest to target and select that one as the goal
-        moveToCells = moveToCells.OrderBy(x => x.CompareTo(closestTargetCell)).ToList();
-        pathDirection = moveToCells.First().Value - Value;
+        // MoveToCells is added to first by PathPlotting, then here for addl cells
+        var sortedCells = moveToCells.OrderBy(x => x.CompareTo(closestTargetCell)).ToList();
+
+        //Check if we are in the radius and just need to move randomly inside
+        // Only closer cells are added to moveToCells, so a random one probably isn't contained
+
+        if ( insideRadius)
+        {            
+            var normalizedVector = new Vector2(cellGoal.Value.x -Value.x,
+                                            cellGoal.Value.y - Value.y).normalized;
+            pathDirection = new Vector2Int(
+                        Mathf.RoundToInt(normalizedVector.x)
+                        , Mathf.RoundToInt((int)normalizedVector.y));
+        }
+        else // Otherwise just move normally
+        {
+            pathDirection = sortedCells.First().Value - Value;
+        }
+
+        cellViz.moveToCells.Clear();
+        cellViz.AddMoveToLocations();
+
         AddNeighborMoveTos();
-
-        //cellViz.moveToCells.Clear();
-        //cellViz.AddMoveToLocations();
-
         moveToCells.Clear();
     }
     void AddNeighborMoveTos()
@@ -65,30 +119,13 @@ public class Cell : Node<Vector2Int>, IComparable<Cell>
         foreach(var cell in neighs)
         {
             if(cell.CompareTo(closestTargetCell) > this.CompareTo(closestTargetCell) 
-                //&& cell.closestTargetCell == this.closestTargetCell
-                )
+                && cell.closestTargetCell == this.closestTargetCell )
             {
                 moveFromCells.Add(cell);
             }
         }
         return moveFromCells;
     }
-
-
-    public void SetClosestTarget()
-    {
-        if(targets == null || targets.Count == 0)
-        {
-            //If target leaves area, set to null/zero so mobs only move randomly
-            closestTargetCell = null;
-            pathDirection = Vector2Int.zero;
-            return;
-        }
-        var closestTarget = targets.OrderBy(
-            targ => targ.transform.position - cellViz.transform.position).First();
-        closestTargetCell = grid.GetTargetCell(closestTarget);
-    }
-
     public int CompareTo(Cell other)
     {
         if(other == null)

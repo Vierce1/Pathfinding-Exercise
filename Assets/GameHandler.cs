@@ -20,7 +20,9 @@ public class GameHandler : MonoBehaviour
             GameObject mobGO = Instantiate(mob, pos, Quaternion.identity);
             mobGO.transform.parent = mobHolder;
             mobGO.transform.Rotate(new Vector3(0, 0, 90));
-            mobList.Add(mobGO.GetComponent<Mob>());
+            var mobScript = mobGO.GetComponent<Mob>();
+            mobScript.grid = grid;
+            mobList.Add(mobScript);
         }
     }
 

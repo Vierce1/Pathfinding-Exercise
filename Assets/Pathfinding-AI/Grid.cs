@@ -16,7 +16,7 @@ public class Grid : MonoBehaviour
     public List<Cell[]> cells { get; private set; }
     public List<Cell> cellList = new List<Cell>();
     float targetRecalcTimer = 1f;
-    float targetRecalcTriggerTime = 0.5f;
+    float targetRecalcTriggerTime = 0.25f;
 
     void Start()
     {
@@ -46,7 +46,7 @@ public class Grid : MonoBehaviour
                 //    ToggleWalkable(cellScript, false);
                 //}
             }
-        }
+        }        
 
         // Initialize the global list
         for (int i = 0; i < xCellCount; i++)
@@ -85,9 +85,10 @@ public class Grid : MonoBehaviour
     void PlotPaths()
     {
         // sort the list of cells to get the closest cells for each target
+        // only get the central cell of the targets for now
         foreach(var target in targetList)
         {
-            var targetPos = GetTargetCell(target);
+            var targetPos = GetTargetCell(target, false);
             var sortedList = cellList.OrderBy(x => x.CompareTo(targetPos)).ToList();
             PathPlotting plot = new PathPlotting();
             plot.CalculatePath(this, sortedList.First());
@@ -99,7 +100,8 @@ public class Grid : MonoBehaviour
         {
             // Only need to set the closest target every time we reprocess
             cell.SetClosestTarget();
-            cell.SelectMoveToTarget();
+            //moved to bottom of SetClosestTarget
+            //cell.SelectMoveToTarget();
         }
     }
 
@@ -228,10 +230,31 @@ public class Grid : MonoBehaviour
         }
         return null;
     }
-    public Cell GetTargetCell(Target target)
+    public Cell GetTargetCell(Target target, bool randomInsideRadius)
     {
-        return GetCell(
+        var cell = GetCell(
             Mathf.RoundToInt(target.transform.position.x),
-            Mathf.RoundToInt(target.transform.position.z));
+            Mathf.RoundToInt(target.transform.position.z));        
+
+        //if asking for a random in radius cell, roll it
+        if (randomInsideRadius)
+        {
+            var dist = target.targetRadius;
+            var targetPos = new Vector3Int(
+                Mathf.RoundToInt(target.transform.position.x), 0
+                , Mathf.RoundToInt(target.transform.position.z));
+
+            cell = GetCell(targetPos.x + Random.Range(-dist, dist + 1)
+                    , targetPos.z + Random.Range(-dist, dist + 1));
+        }
+
+        if (cell == null)
+        {
+            cell = GetCell(
+                    Mathf.RoundToInt(target.transform.position.x),
+                    Mathf.RoundToInt(target.transform.position.z));
+
+        }
+        return cell;
     }
 }
