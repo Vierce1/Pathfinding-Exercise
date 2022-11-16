@@ -32,6 +32,6 @@ public class GameHandler : MonoBehaviour
     }
     public void UpdateMobMoveTargets()
     {
-        mobList.ForEach(mob => mob.AddRandomnessToMovement());
+        mobList.ForEach(mob => mob.AdditionalMovementAdder());
     }
 }

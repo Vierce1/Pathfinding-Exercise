@@ -20,10 +20,11 @@ public class CellViz : MonoBehaviour
     }
     void OnTriggerEnter(Collider other)
     {
-        if(other.gameObject.tag != "Mob")
+        if (other.gameObject.tag != "Mob")
         {
             return;
         }
+
         var direction = cell.pathDirection;
         // On trigger enter, gameobject is passed the cell to move to
         var mob = other.gameObject.GetComponent<Mob>();

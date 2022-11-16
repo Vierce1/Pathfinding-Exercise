@@ -257,4 +257,30 @@ public class Grid : MonoBehaviour
         }
         return cell;
     }
+
+    public Cell GetNearestWalkableCell(Cell fromCell, Vector2Int mobPos)
+    {
+        //If don't pass in a cell just iterate through all cells
+        if(fromCell == null)
+        {            
+            return cellList.OrderBy(cell => cell.CompareToVector2(mobPos)).First();
+        }
+
+        var cells = new List<Cell>();
+        //iterate through nearby cells
+        for (int i = fromCell.Value.x - 8; i < fromCell.Value.x + 8; i++)
+        {
+            for (int j = fromCell.Value.y - 8; j < fromCell.Value.y + 8; j++)
+            {
+                var cell = GetCell(i, j);
+                if (cell == null || !cell.isWalkable)
+                {
+                    continue;
+                }
+                cells.Add(cell);
+            }
+        }
+        cells = cells.OrderBy(cell => cell.CompareTo(fromCell)).ToList();
+        return cells.First();
+    }
 }

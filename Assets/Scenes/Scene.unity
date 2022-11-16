@@ -651,8 +651,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c9ab117ef0d53dc40b6ca8dc46e9312b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  xCellCount: 110
-  zCellCount: 110
+  xCellCount: 60
+  zCellCount: 60
   cell: {fileID: 6795835554346052750, guid: 6741ac9651df5394399f8b49be93c97d, type: 3}
   targetList: []
 --- !u!4 &1304559165

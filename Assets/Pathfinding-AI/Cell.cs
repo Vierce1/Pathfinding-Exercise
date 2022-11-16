@@ -135,29 +135,14 @@ public class Cell : Node<Vector2Int>, IComparable<Cell>
         }
         return Mathf.Abs(Value.x - other.Value.x) + Mathf.Abs(Value.y - other.Value.y);
     }
+    public int CompareToVector2(Vector2Int vector)
+    {
+        return Mathf.Abs(Value.x - vector.x) + Mathf.Abs(Value.y - vector.y);
+    }
     
     //for use when a unit ends up on a non-walkable cell. Get them off quickly
     public Vector2Int GetWalkablePathDirection()
     {
-        return (GetNearestWalkableCell().Value - Value);
-    }
-     Cell GetNearestWalkableCell()
-    {
-        var cells = new List<Cell>();
-        //iterate through nearby cells
-        for (int i = Value.x - 8; i < Value.x + 8; i++)
-        {
-            for (int j = Value.y - 8; j < Value.y + 8; j++)
-            {
-                var cell = grid.GetCell(i, j);
-                if (cell == null || !cell.isWalkable)
-                {
-                    continue;
-                }
-                cells.Add(cell);
-            }
-        }
-        cells = cells.OrderBy(cell => cell.CompareTo(this)).ToList();
-        return cells.First();
+        return (grid.GetNearestWalkableCell(this, Vector2Int.zero).Value - Value);
     }
 }
