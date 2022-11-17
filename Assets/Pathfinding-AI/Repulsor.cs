@@ -7,6 +7,7 @@ public class Repulsor : MonoBehaviour
     // Stick this on any repulsor and adjust the strength in inspector
     [SerializeField] float repulseStrength = 1f;
     Grid grid;
+    GameHandler gameHandler;
 
     private void OnTriggerEnter(Collider other)
     {
@@ -27,14 +28,14 @@ public class Repulsor : MonoBehaviour
         grid.ToggleWalkable(cell.cell, true);
     }
 
-    void Start()
+    void Update()
     {
-        grid = FindObjectOfType<Grid>();
 
     }
 
-    void Update()
+    void Start()
     {
-        
+        grid = FindObjectOfType<Grid>();
+        gameHandler = FindObjectOfType<GameHandler>();
     }
 }

@@ -8,19 +8,19 @@ public class Grid : MonoBehaviour
 {
     GameHandler gameHandler;
     //X is number of columns. Y is number of rows.
-    [SerializeField] int xCellCount = 100;
-    [SerializeField] int zCellCount = 100;
+    public int xCellCount = 100;
+    public int zCellCount = 100;
     float heightAboveSeaLevel = 3;
     [SerializeField] GameObject cell;
     public List<Target> targetList = new List<Target>();
     public List<Cell[]> cells { get; private set; }
     public List<Cell> cellList = new List<Cell>();
     float targetRecalcTimer = 1f;
-    float targetRecalcTriggerTime = 0.25f;
+    float targetRecalcTriggerTime = 0.15f;
 
-    void Start()
+    public void BuildGrid()
     {
-        gameHandler = FindObjectOfType<GameHandler>();
+        gameHandler = gameHandler == null ? FindObjectOfType<GameHandler>() : gameHandler;
         cells = new List<Cell[]>();
         // Initialize the local cell holding List
         var cellInitialList = new List<List<Cell>>();
@@ -65,7 +65,19 @@ public class Grid : MonoBehaviour
         // Initial plot - Call it again as targets change or over time
         PlotPaths();
     }
-
+    public void DestroyGrid()
+    {
+        for(int i = cells.Count - 1; i >= 0; i--)
+        {
+            var cellArray = cells[i];
+            for(int j = cellArray.Length - 1; j >= 0; j--)
+            {
+                var cell = cellArray[j];
+                Destroy(cell.cellViz.gameObject);
+            }    
+        }
+        cells.Clear();
+    }
     void FixedUpdate()
     {
         targetRecalcTimer += Time.deltaTime;
@@ -83,8 +95,12 @@ public class Grid : MonoBehaviour
     //Calculate path for every cell. Called every path update
     void PlotPaths()
     {
+        if (gameHandler.beatLevel)
+        {
+            return;
+        }
         // sort the list of cells to get the closest cells for each target
-        // only get the central cell of the targets for now        
+        // only get the central cell of the targets for now 
         foreach(var target in targetList)
         {
             var targetPos = GetTargetCell(target, false);
@@ -220,67 +236,88 @@ public class Grid : MonoBehaviour
         cell.cellViz.SetColor(cell.isWalkable);
     }
     public Cell GetCell(int x, int z)
-    {        
-        if (x >= 0 && x < xCellCount && z >= 0 && z < zCellCount)
+    {
+        try
         {
-            return cells[x][z];
+            if (x >= 0 && x < xCellCount && z >= 0 && z < zCellCount)
+            {
+                return cells[x][z];
+            }
         }
+        catch { return null; }
         return null;
     }
     public Cell GetTargetCell(Target target, bool randomInsideRadius)
     {
-        var cell = GetCell(
-            Mathf.RoundToInt(target.transform.position.x),
-            Mathf.RoundToInt(target.transform.position.z));        
-
-        //if asking for a random in radius cell, roll it
-        if (randomInsideRadius)
+        try
         {
-            var dist = target.targetRadius;
-            var targetPos = new Vector3Int(
-                Mathf.RoundToInt(target.transform.position.x), 0
-                , Mathf.RoundToInt(target.transform.position.z));
+            var cell = GetCell(
+                Mathf.RoundToInt(target.transform.position.x),
+                Mathf.RoundToInt(target.transform.position.z));
 
-            if (cell.isWalkable)
+            //if asking for a random in radius cell, roll it
+            if (randomInsideRadius)
             {
-                cell = GetCell(targetPos.x + Random.Range(-dist, dist + 1)
-                    , targetPos.z + Random.Range(-dist, dist + 1));
+                var dist = target.targetRadius;
+                var targetPos = new Vector3Int(
+                    Mathf.RoundToInt(target.transform.position.x), 0
+                    , Mathf.RoundToInt(target.transform.position.z));
+
+                if (cell.isWalkable)
+                {
+                    cell = GetCell(targetPos.x + Random.Range(-dist, dist + 1)
+                        , targetPos.z + Random.Range(-dist, dist + 1));
+                }
             }
-        }
 
-        if (cell == null)
-        {
-            cell = GetCell(
-                    Mathf.RoundToInt(target.transform.position.x),
-                    Mathf.RoundToInt(target.transform.position.z));
+            if (cell == null)
+            {
+                cell = GetCell(
+                        Mathf.RoundToInt(target.transform.position.x),
+                        Mathf.RoundToInt(target.transform.position.z));
 
+            }
+            return cell;
         }
-        return cell;
+        catch { }
+        return null;
     }
 
-    public Cell GetNearestWalkableCell(Cell fromCell, Vector2Int mobPos)
+    public Cell GetNearestWalkableCell(Cell fromCell, Vector2Int mobPos, bool isMob)
     {
         //If don't pass in a cell just iterate through all cells
-        if(fromCell == null)
-        {            
-            return cellList.OrderBy(cell => cell.CompareToVector2(mobPos)).First();
+        if(isMob)
+        {
+            var list = cellList;            
+            return list.OrderBy(cell => cell.CompareToVector2(mobPos)).First();
         }
 
         var cells = new List<Cell>();
         //iterate through nearby cells
-        for (int i = fromCell.Value.x - 8; i < fromCell.Value.x + 8; i++)
+        for (int i = fromCell.Value.x - 50; i < fromCell.Value.x + 50; i++)
         {
-            for (int j = fromCell.Value.y - 8; j < fromCell.Value.y + 8; j++)
+            if(i < 0 || i >= xCellCount)
             {
-                var cell = GetCell(i, j);
-                if (cell == null || !cell.isWalkable)
+                continue;
+            }
+            for (int j = fromCell.Value.y - 50; j < fromCell.Value.y + 50; j++)
+            {
+                if (j < 0 || j >= zCellCount)
                 {
                     continue;
                 }
-                cells.Add(cell);
+                var cell = GetCell(i, j);
+                if (cell.isWalkable)
+                {
+                    cells.Add(cell);
+                }
             }
         }
-        cells = cells.OrderBy(cell => cell.CompareTo(fromCell)).ToList();
-        return cells.First();
+        try
+        {
+            cells = cells.OrderBy(cell => cell.CompareTo(fromCell)).ToList();
+            return cells.First();
+        }
+        catch { return null; }
     }
 }

@@ -5,7 +5,9 @@ using UnityEngine;
 public class CellViz : MonoBehaviour
 {
     public Cell cell;
+    public bool affectedByNonPlayerTarget = false;
     [SerializeField] Vector2Int pathDirection;
+    [SerializeField] bool isWalkable;
     [SerializeField] Material nonWalkableMaterial;
     [SerializeField] Material walkableMaterial;
     [SerializeField] Vector2Int closestTargetPosition;
@@ -28,13 +30,16 @@ public class CellViz : MonoBehaviour
         var direction = cell.pathDirection;
         // On trigger enter, gameobject is passed the cell to move to
         var mob = other.gameObject.GetComponent<Mob>();
-        mob.onUnwalkableSurface = false;
 
         //check if they are on an unwalkable surface. If so, just get them out
         if (!cell.isWalkable)
         {
             direction = cell.GetWalkablePathDirection();
             mob.onUnwalkableSurface = true;
+        }
+        else
+        {
+            mob.onUnwalkableSurface = false;
         }
         mob.UpdateMoveDirection(direction);
     }
@@ -48,7 +53,8 @@ public class CellViz : MonoBehaviour
     }
     private void Update()
     {
-        //pathDirection = cell.pathDirection;
+        pathDirection = cell.pathDirection;
+        isWalkable = cell.isWalkable;
         //closestTargetPosition = cell.closestTargetCell != null ?
         //    cell.closestTargetCell.Value : Vector2Int.zero;
         //targets = cell.targets;        

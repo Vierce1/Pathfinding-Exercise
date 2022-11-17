@@ -143,6 +143,6 @@ public class Cell : Node<Vector2Int>, IComparable<Cell>
     //for use when a unit ends up on a non-walkable cell. Get them off quickly
     public Vector2Int GetWalkablePathDirection()
     {
-        return (grid.GetNearestWalkableCell(this, Vector2Int.zero).Value - Value);
+        return grid.GetNearestWalkableCell(this, Vector2Int.zero, false).Value - Value;
     }
 }
