@@ -1,7 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
+using UnityEngine.UI;
+using System.Linq;
 public class GameHandler : MonoBehaviour
 {
     [SerializeField] GameObject mob;
@@ -17,13 +18,14 @@ public class GameHandler : MonoBehaviour
 
     //level specific
     [SerializeField] GameObject[] levelObjects;
-   
+    [SerializeField] Text infoText;
 
     void Start()
     {
         grid = FindObjectOfType<Grid>();
         System.Array.ForEach(levelObjects, level => level.SetActive(false));
         SetUpLevel(currentLevel);
+        grid.targetList.Add(FindObjectOfType<Hero>().GetComponent<Target>());
     }
 
     void Update()
@@ -31,11 +33,13 @@ public class GameHandler : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.Return))
         {
             levelPlaying = true;
+            infoText.gameObject.SetActive(false);
         }
 
         if (Application.isEditor && Input.GetKeyDown(KeyCode.N))
         {
             beatLevel = true;
+            infoText.gameObject.SetActive(false);
             LoadNextLevel();
         }
     }
@@ -45,7 +49,12 @@ public class GameHandler : MonoBehaviour
     }
     public void LoadNextLevel()
     {
-        levelObjects[currentLevel - 1].SetActive(false);
+        levelPlaying = false;
+        try
+        {
+            levelObjects[currentLevel - 1].SetActive(false);
+        }
+        catch { }
         currentLevel++;
         beatLevel = false;
         //Destroy all objects / Set inactive       
@@ -57,18 +66,28 @@ public class GameHandler : MonoBehaviour
     }
     void SetUpLevel(int level)
     {
-        levelObjects[level - 1].SetActive(true);        
-        var camPos = GetCamStartPos(level);
-        Camera.main.transform.position = camPos.pos;
-        Camera.main.transform.rotation = camPos.rot;
         var heroPos = GetHeroStart(level);
         GameObject heroGO = Instantiate(heroPrefab, heroPos.pos, heroPos.rot);
         hero = heroGO.GetComponent<Hero>();
+        try
+        {
+            levelObjects[level - 1].SetActive(true);
+            // Find all initial targets. Can add more later
+            grid.targetList.Clear();
+            var targGOs = GameObject.FindGameObjectsWithTag("Target").Where(x=>x.gameObject.activeSelf).ToList();
+            targGOs.ForEach(x => grid.targetList.Add(x.GetComponent<Target>()));
+        }
+        catch {
+            //game over, resetting
+            GameOver();
+        }
+        var camPos = GetCamStartPos(level);
+        Camera.main.transform.position = camPos.pos;
+        Camera.main.transform.rotation = camPos.rot;
 
         var gridSize = GetGridSize(currentLevel);
         grid.xCellCount = gridSize.x;
-        grid.zCellCount = gridSize.z;
-        Debug.Log("Buidling grid " + level);
+        grid.zCellCount = gridSize.z;        
         grid.BuildGrid();
 
         // Mobs
@@ -89,7 +108,7 @@ public class GameHandler : MonoBehaviour
         {
             case 1: return
                     (new Vector3(70, 5.5f, 26f), Quaternion.Euler(4.24f, 176, 0));
-            case 2: return (new Vector3(70, 5.5f, 26f), Quaternion.Euler(4.24f, 176, 0));
+            case 2: return (new Vector3(80.3f, 4.346f, 2.623f), Quaternion.Euler(11.4f, -91.15f, 0));
 
         }
         return (Vector3.zero, Quaternion.identity);
@@ -117,9 +136,9 @@ public class GameHandler : MonoBehaviour
                 mobZ = (0, 10);
                 break;
             case 2: //Same level but with target can cut down
-                mobCount = 800;
+                mobCount = 1200;
                 mobX = (0, 60);
-                mobZ = (0, 10);
+                mobZ = (0, 10 );
                 break;
         }
 
@@ -135,5 +154,12 @@ public class GameHandler : MonoBehaviour
             mobScript.grid = grid;
             mobList.Add(mobScript);
         }
+    }    
+
+    public IEnumerator GameOver()
+    {
+        yield return new WaitForSeconds(4f);
+        currentLevel = 0;
+        LoadNextLevel();
     }
 }

@@ -14,6 +14,8 @@ public class Mob : MonoBehaviour
     public bool onUnwalkableSurface = false;
     public bool outOfBounds = false;
     Rigidbody rb;
+    [SerializeField] bool debugMe = false;
+    public bool applySwarm = true;
 
     // Called when Mob comes into contact with centerpoint of new cell    
     public void UpdateMoveDirection(Vector2Int newDir)
@@ -31,14 +33,19 @@ public class Mob : MonoBehaviour
                 , Random.Range(-randomnessMove, randomnessMove));
 
         //check if at edge of map - if so, move inward
-        if (grid != null && grid.GetCell(
-            Mathf.RoundToInt(transform.position.x)
-            , Mathf.RoundToInt(transform.position.z)) == null)
+        var mobPos = new Vector2Int(Mathf.RoundToInt(transform.position.x)
+            , Mathf.RoundToInt(transform.position.z));
+        var onCell = grid.GetCell(mobPos.x, mobPos.y);
+        if (grid != null &&  onCell == null)
         {
             outOfBounds = true;
             addlDirection =
-                GetWalkablePathDirection().normalized;
-
+                GetWalkablePathDirection(mobPos).normalized;
+            //if (debugMe)
+            //{
+            //    Debug.Log(addlDirection);
+            //}
+            
             moveDirection = addlDirection;
             return;
         }
@@ -65,7 +72,7 @@ public class Mob : MonoBehaviour
 
     void OnTriggerEnter(Collider other)
     {
-        if (appliedSwarmCount || other.isTrigger)
+        if (appliedSwarmCount || other.isTrigger || !applySwarm)
         {
             return;
         }
@@ -100,12 +107,14 @@ public class Mob : MonoBehaviour
     {
         rb = GetComponent<Rigidbody>();
     }
-    public Vector2 GetWalkablePathDirection()
+    public Vector2 GetWalkablePathDirection(Vector2Int mobPos)
     {
-        var mobPos = new Vector2Int(Mathf.RoundToInt(transform.position.x)
-            , Mathf.RoundToInt(transform.position.z));
-
-        return grid.GetNearestWalkableCell(null, mobPos, true).Value
-                                - mobPos;
+        var closestCell = grid.GetNearestWalkableCell(null, mobPos, true);
+        var direction = closestCell.Value - mobPos;
+        if (debugMe)
+        {
+            Debug.Log("closest cell = " + closestCell.Value);
+        }
+        return direction;
     }
 }

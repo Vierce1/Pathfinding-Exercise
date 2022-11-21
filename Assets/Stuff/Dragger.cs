@@ -55,6 +55,10 @@ public class Dragger : MonoBehaviour
     }
     public void Drop()
     {
+        if (Input.GetMouseButton(0))
+        {
+            return;
+        }
         beingDrug = false;
         gameHandler.draggingRepulsor = false;
     }

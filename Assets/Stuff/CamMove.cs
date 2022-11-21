@@ -12,8 +12,7 @@ public class CamMove : MonoBehaviour
 
     void Start()
     {
-        gameHandler = FindObjectOfType<GameHandler>();
-        
+        gameHandler = FindObjectOfType<GameHandler>();        
     }
 
 
@@ -21,16 +20,10 @@ public class CamMove : MonoBehaviour
     {
         var dragging = gameHandler.draggingRepulsor;
         UpdateMovement(dragging);
-        if (dragging)
-        {            
-            return;
-        }
-
         if (Input.GetMouseButton(1))
         {
             UpdateRotation();
-        }        
-        
+        }
     }
 
     void UpdateMovement(bool dragging)

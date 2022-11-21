@@ -11,7 +11,8 @@ public class PathPlotting
     public void CalculatePath(Grid gridMap, Cell gridCell)
     {
         cell = gridCell;
-        grid = gridMap;       
+        grid = gridMap;
+        cell.stepsToTarget = 0;
 
         // Get neighboring cells for the end target, and if they are walkable,
         // add this end target cell to their moveTo list
@@ -20,6 +21,7 @@ public class PathPlotting
         foreach (var neighbor in neighbors)
         {
             neighbor.moveToCells.Add(cell);
+            neighbor.stepsToTarget = 1;
             neighbor.SelectMoveToTarget(cell);
         }
     }

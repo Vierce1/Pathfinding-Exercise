@@ -11,12 +11,15 @@ public class Target : MonoBehaviour, IComparable<Cell>
     // if they are inside the radius
     public int targetRadius = 2;
     public bool isClickable = false;
+    public bool outOfPlay = false;
     [SerializeField] bool isPlayer = false;
-
+    public Vector3 startingPos;
     //[SerializeField] float targetColliderSize = 15f;
+    [SerializeField] public bool mobsApplySwarm = true; 
 
     private void Start()
     {
+        startingPos = transform.position;
         if (GetComponent<Hero>() == null && !isClickable)
         {
             GetComponentInChildren<Dragger>().enabled = false;
@@ -30,6 +33,8 @@ public class Target : MonoBehaviour, IComparable<Cell>
             return;
         }
         var cell = other.gameObject.GetComponent<CellViz>();
+        // If there's another target affecting this cell besides the hero,
+        // prioritize that target instead
         if(isPlayer && cell.affectedByNonPlayerTarget)
         {
             return;
@@ -62,8 +67,12 @@ public class Target : MonoBehaviour, IComparable<Cell>
         {
             return 9999;
         }
-        return 
-            Mathf.Abs(Mathf.RoundToInt(transform.position.x) - other.Value.x
-            + Mathf.Abs(Mathf.RoundToInt(transform.position.z) - other.Value.y));
+        try
+        {
+            return
+                Mathf.Abs(Mathf.RoundToInt(transform.position.x) - other.Value.x
+                + Mathf.Abs(Mathf.RoundToInt(transform.position.z) - other.Value.y));
+        }
+        catch { return 9999; }
     }
 }

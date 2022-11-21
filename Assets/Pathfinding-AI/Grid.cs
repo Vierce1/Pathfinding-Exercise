@@ -15,7 +15,7 @@ public class Grid : MonoBehaviour
     public List<Target> targetList = new List<Target>();
     public List<Cell[]> cells { get; private set; }
     public List<Cell> cellList = new List<Cell>();
-    float targetRecalcTimer = 1f;
+    float targetRecalcTimer = 0f;
     float targetRecalcTriggerTime = 0.15f;
 
     public void BuildGrid()
@@ -58,10 +58,6 @@ public class Grid : MonoBehaviour
             cells[i] = cellInitialList[i].ToArray();
         }
 
-        // Find all initial targets. Can add more later
-        var targGOs = GameObject.FindGameObjectsWithTag("Target").ToList();
-        targGOs.ForEach(x => targetList.Add(x.GetComponent<Target>()));
-
         // Initial plot - Call it again as targets change or over time
         PlotPaths();
     }
@@ -103,7 +99,17 @@ public class Grid : MonoBehaviour
         // only get the central cell of the targets for now 
         foreach(var target in targetList)
         {
+            if (target == null || !target.gameObject.activeSelf || target.outOfPlay)
+            {
+                // Target is part of last level or not on the field yet
+                continue;
+            }
             var targetPos = GetTargetCell(target, false);
+            if(targetPos == null)
+            {
+                // Target is off the grid, don't use it
+                continue;
+            }            
             var sortedList = cellList.OrderBy(x => x.CompareTo(targetPos)).ToList();
             PathPlotting plot = new PathPlotting();
             plot.CalculatePath(this, sortedList.First());
@@ -230,10 +236,15 @@ public class Grid : MonoBehaviour
         if (cell == null) { Debug.Log("Cell null"); return; }
 
         cell.isWalkable = makeWalkable;
+        cell.pathDirection = Vector2Int.zero;
 
         //change the visual color of the cell to show isWalkable state
         //comment this out for runtime
         cell.cellViz.SetColor(cell.isWalkable);
+
+        //Remove this cell from any neighbor cells moveToCells lists
+        var neighbors = cell.GetNeighborCells(false);
+        neighbors.ForEach(x => x.moveToCells.Remove(cell));
     }
     public Cell GetCell(int x, int z)
     {
@@ -270,13 +281,6 @@ public class Grid : MonoBehaviour
                 }
             }
 
-            if (cell == null)
-            {
-                cell = GetCell(
-                        Mathf.RoundToInt(target.transform.position.x),
-                        Mathf.RoundToInt(target.transform.position.z));
-
-            }
             return cell;
         }
         catch { }
@@ -288,8 +292,13 @@ public class Grid : MonoBehaviour
         //If don't pass in a cell just iterate through all cells
         if(isMob)
         {
-            var list = cellList;            
-            return list.OrderBy(cell => cell.CompareToVector2(mobPos)).First();
+            var list = cellList;
+            //Need to exclude the cell that shares the same value with the mob 
+            // if (when) that happens
+
+            return list.OrderBy(cell => cell.CompareToVector2(mobPos))
+                .Where(cell => cell.Value.x != mobPos.x 
+                                && cell.Value.y != mobPos.y).First();
         }
 
         var cells = new List<Cell>();

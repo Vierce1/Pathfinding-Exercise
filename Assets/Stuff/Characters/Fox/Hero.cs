@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class Hero : MonoBehaviour
 {
@@ -11,6 +12,8 @@ public class Hero : MonoBehaviour
     [SerializeField] float maxMoveSpeed = 3f;
     public float swarmCounter = 0f;
     bool isDead = false;
+    [SerializeField] Slider swarmSlider;
+    [SerializeField] Image sliderFillimage;
 
     void Start()
     {
@@ -26,17 +29,24 @@ public class Hero : MonoBehaviour
         {
             animator.SetBool("dead", true);
             rb.velocity = Vector3.zero;
-            Debug.Log("Lose");
+            StartCoroutine(gameHandler.GameOver());
             return;
         }
 
         if (swarmCounter > 3)
         {
             isDead = true;
+            swarmSlider.value = 3;
         }
-        else if (swarmCounter < 0)
+        else if (swarmCounter < 0 || swarmCounter == 0)
         {
             swarmCounter = 0;
+            sliderFillimage.color = Color.white;
+        }
+        else
+        {
+            swarmSlider.value = swarmCounter;
+            sliderFillimage.color = Color.red;
         }
         
 
